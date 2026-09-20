@@ -39,7 +39,7 @@ QUESTIONNAIRES = {
         "En mis actividades tiendo a ser sumamente exacto y ordenado.",
         "Soy de carácter firme y tengo una actitud algo enérgica.",
         "Me siento más incómodo o me fatigo con más facilidad cuando hace calor que la mayoría.",
-        "Tiendo a ser una persona que suda rapido y mucho o antes el menor estimulo.",
+        "Tiendo a ser una persona que suda mucho y rapido o ante el menor estímulo.",
         "Aunque no siempre lo demuestre, me irrito o me enojo con facilidad.",
         "Si me salto una comida o esta se retrasa me siento incómodo.",
         "Una o más de las siguientes características corresponden a mi pelo: prematuramente cano o calvo, fino, suave, lacio, rubio, pelirrojo o muy claro.",
@@ -50,7 +50,7 @@ QUESTIONNAIRES = {
         "Tiendo a ser perfeccionista en cuanto a los detalles.",
         "Me enojo con bastante facilidad, pero lo olvido pronto.",
         "Me gustan mucho los alimentos fríos, como el helado y las bebidas heladas.",
-        "Si la habitación está demasiado calorosa, lo noto con más facilidad que si está demasiado fría.",
+        "Si la habitación está demasiado caldeada, lo noto con más facilidad que si está demasiado fría.",
         "No tolero las comidas muy calientes ni muy condimentadas.",
         "No soy tan tolerante como debería con quienes disienten conmigo.",
         "Disfruto con el desafío, y cuando deseo algo soy muy decidido en mis esfuerzos por conseguirlo.",
@@ -114,13 +114,15 @@ SCORE_OPTIONS = {
 
 
 def calculate_result(section_scores):
-    """Calcula los porcentajes comparativos a partir de los tres totales."""
     grand_total = sum(section_scores.values())
+
     percentages = {
         dosha: round((score / grand_total) * 100, 1)
         for dosha, score in section_scores.items()
     }
+
     ranked = sorted(percentages, key=percentages.get, reverse=True)
+
     gap_first_second = percentages[ranked[0]] - percentages[ranked[1]]
     spread = percentages[ranked[0]] - percentages[ranked[2]]
 
@@ -129,7 +131,10 @@ def calculate_result(section_scores):
         explanation = "Los tres doshas presentan una distribución muy cercana."
     elif gap_first_second <= 5:
         profile = f"{ranked[0]}–{ranked[1]}"
-        explanation = f"Predominan dos doshas con puntuaciones cercanas: {ranked[0]} y {ranked[1]}."
+        explanation = (
+            f"Predominan dos doshas con puntuaciones cercanas: "
+            f"{ranked[0]} y {ranked[1]}."
+        )
     else:
         profile = ranked[0]
         explanation = f"El dosha con mayor puntuación es {ranked[0]}."
@@ -137,18 +142,26 @@ def calculate_result(section_scores):
     return grand_total, percentages, ranked, profile, explanation
 
 
-def build_report(name, section_scores, grand_total, percentages, profile, explanation):
+def build_report(
+    name,
+    section_scores,
+    grand_total,
+    percentages,
+    profile,
+    explanation,
+):
     person = name.strip() or "Persona evaluada"
+
     return f"""EVALUACIÓN DE DOSHAS
-Fecha: {datetime.now().strftime('%d/%m/%Y')}
+Fecha: {datetime.now().strftime("%d/%m/%Y")}
 Nombre: {person}
 
 RESULTADO
 Perfil: {profile}
 
-Vata:  {section_scores['Vata']} puntos — {percentages['Vata']:.1f}%
-Pitta: {section_scores['Pitta']} puntos — {percentages['Pitta']:.1f}%
-Kapha: {section_scores['Kapha']} puntos — {percentages['Kapha']:.1f}%
+Vata: {section_scores["Vata"]} puntos — {percentages["Vata"]:.1f}%
+Pitta: {section_scores["Pitta"]} puntos — {percentages["Pitta"]:.1f}%
+Kapha: {section_scores["Kapha"]} puntos — {percentages["Kapha"]:.1f}%
 Suma general: {grand_total} puntos
 
 Interpretación: {explanation}
@@ -164,97 +177,190 @@ Esta herramienta tiene fines educativos y no constituye diagnóstico médico.
 st.markdown(
     """
     <style>
-    .stApp { background: linear-gradient(180deg, #DDF4FA 0%, #F4FBF7 48%, #FFFFFF 100%); }
-    .block-container { max-width: 900px; padding-top: 1.5rem; padding-bottom: 3rem; }
-    h1, h2, h3 { color: #173F4F; }
+    .stApp {
+        background: linear-gradient(
+            180deg,
+            #DDF4FA 0%,
+            #F4FBF7 48%,
+            #FFFFFF 100%
+        );
+    }
+
+    .block-container {
+        max-width: 900px;
+        padding-top: 1.5rem;
+        padding-bottom: 3rem;
+    }
+
+    h1, h2, h3 {
+        color: #173F4F !important;
+    }
+
     [data-testid="stForm"] {
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(255, 255, 255, 0.96);
         border: 1px solid #BFE1D4;
         border-radius: 20px;
         padding: 1.2rem 1.25rem;
         box-shadow: 0 8px 25px rgba(31, 89, 99, 0.08);
     }
+
     .hero {
         background: linear-gradient(135deg, #236B73, #3E927B);
-        color: white;
+        color: white !important;
         padding: 1.55rem;
         border-radius: 22px;
         margin-bottom: 1rem;
         box-shadow: 0 10px 28px rgba(35, 107, 115, 0.18);
     }
-    .hero h1 { color: white; margin: 0; font-size: 2rem; }
-    .hero p { margin: .55rem 0 0; opacity: .96; }
-    .question-number { color: #236B73; font-weight: 700; margin-top: .45rem; }
-    .scale {
-        background: #EEF8F3;
-        border: 1px solid #C9E7D9;
-        border-radius: 14px;
-        padding: .75rem .9rem;
-        margin: .4rem 0 1rem;
+
+    .hero h1,
+    .hero p {
+        color: white !important;
     }
-    .result-card {
-        background: #FFFFFF !important;
-        color: #173F4F !important;
-        border-radius: 18px;
-        padding: 1rem 1.1rem;
-        margin: .45rem 0;
-        border-left: 7px solid var(--accent);
-        box-shadow: 0 5px 16px rgba(31, 89, 99, 0.08);
-    }
-    .result-card h3 {
-        color: #173F4F !important;
+
+    .hero h1 {
         margin: 0;
+        font-size: 2rem;
     }
-    .result-card p, .result-card b {
-        color: #173F4F !important;
-        margin: .25rem 0 0;
+
+    .hero p {
+        margin: 0.55rem 0 0;
     }
+
     .notice {
         background: #FFF8E7;
         border: 1px solid #F0D999;
         border-radius: 14px;
-        padding: .8rem 1rem;
-        color: #5E4B18;
+        padding: 0.8rem 1rem;
+        color: #5E4B18 !important;
+        margin-bottom: 1rem;
     }
+
+    .notice,
+    .notice * {
+        color: #5E4B18 !important;
+        opacity: 1 !important;
+    }
+
+    .question-number {
+        color: #173F4F !important;
+        font-weight: 700;
+        margin-top: 0.45rem;
+    }
+
+    [data-baseweb="tab-list"] button,
+    [data-baseweb="tab-list"] button *,
+    [data-testid="stTabs"] button,
+    [data-testid="stTabs"] button * {
+        color: #173F4F !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        font-weight: 700 !important;
+        font-size: 1rem !important;
+    }
+
+    [data-baseweb="tab-list"]
+    button[aria-selected="true"],
+    [data-baseweb="tab-list"]
+    button[aria-selected="true"] * {
+        color: #A21CAF !important;
+    }
+
+    [data-testid="stAlert"] {
+        background: #DCEEFF !important;
+        border: 2px solid #1769C2 !important;
+    }
+
+    [data-testid="stAlert"],
+    [data-testid="stAlert"] * {
+        color: #102A43 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    [data-testid="stCaptionContainer"],
+    [data-testid="stCaptionContainer"] * {
+        color: #334E68 !important;
+        opacity: 1 !important;
+    }
+
     div[data-baseweb="select"] > div {
-        background: linear-gradient(90deg, #1769C2 0%, #A63BD4 55%, #E23CAC 100%) !important;
+        background: linear-gradient(
+            90deg,
+            #1769C2 0%,
+            #A63BD4 55%,
+            #E23CAC 100%
+        ) !important;
         border: 1px solid #D45AC1 !important;
         color: #FFFFFF !important;
     }
+
     div[data-baseweb="select"] span,
     div[data-baseweb="select"] svg {
         color: #FFFFFF !important;
         fill: #FFFFFF !important;
     }
+
     div[data-baseweb="input"] > div {
         background: #EAF4FF !important;
         border: 2px solid #C843C4 !important;
     }
+
     div[data-baseweb="input"] input {
         background: transparent !important;
         color: #173F4F !important;
     }
+
     div.stButton > button,
     div.stDownloadButton > button,
     div[data-testid="stFormSubmitButton"] > button {
-        background: linear-gradient(90deg, #1769C2 0%, #A63BD4 55%, #E23CAC 100%) !important;
+        background: linear-gradient(
+            90deg,
+            #1769C2 0%,
+            #A63BD4 55%,
+            #E23CAC 100%
+        ) !important;
         border: none !important;
         color: #FFFFFF !important;
         border-radius: 12px;
         font-weight: 700;
         min-height: 3rem;
     }
-    div.stButton > button:hover,
-    div.stDownloadButton > button:hover,
-    div[data-testid="stFormSubmitButton"] > button:hover {
-        background: linear-gradient(90deg, #12549D 0%, #8F2DBC 55%, #C92A96 100%) !important;
-        color: #FFFFFF !important;
+
+    .result-card {
+        background: #FFFFFF !important;
+        color: #173F4F !important;
+        border-radius: 18px;
+        padding: 1rem 1.1rem;
+        margin: 0.45rem 0;
+        border-left: 7px solid var(--accent);
+        box-shadow: 0 5px 16px rgba(31, 89, 99, 0.08);
     }
+
+    .result-card,
+    .result-card h3,
+    .result-card p,
+    .result-card b {
+        color: #173F4F !important;
+    }
+
     @media (max-width: 600px) {
-        .block-container { padding: .75rem .65rem 2rem; }
-        .hero { padding: 1.15rem; border-radius: 17px; }
-        .hero h1 { font-size: 1.55rem; }
-        [data-testid="stForm"] { padding: .8rem; }
+        .block-container {
+            padding: 0.75rem 0.65rem 2rem;
+        }
+
+        .hero {
+            padding: 1.15rem;
+            border-radius: 17px;
+        }
+
+        .hero h1 {
+            font-size: 1.55rem;
+        }
+
+        [data-testid="stForm"] {
+            padding: 0.8rem;
+        }
     }
     </style>
     """,
@@ -266,86 +372,154 @@ st.markdown(
     """
     <section class="hero">
         <h1>🪷 Evaluador de Doshas</h1>
-        <p>Calcula la proporción de Vata, Pitta y Kapha mediante tres secciones de 20 afirmaciones.</p>
+        <p>
+            Calcula la proporción de Vata, Pitta y Kapha mediante
+            tres secciones de 20 afirmaciones.
+        </p>
     </section>
     """,
     unsafe_allow_html=True,
 )
 
+
 st.markdown(
     """
     <div class="notice">
-    <b>Cómo responder:</b> valora cada afirmación según cómo se aplica a ti durante
-    la mayor parte de tu vida. Debes contestar las 60 afirmaciones.
+        <b>Cómo responder:</b> valora cada afirmación según cómo
+        se aplica a ti durante la mayor parte de tu vida.
+        Debes contestar las 60 afirmaciones.
     </div>
     """,
     unsafe_allow_html=True,
 )
 
+
 if "result" not in st.session_state:
     st.session_state.result = None
 
+
 with st.form("dosha_form"):
-    name = st.text_input("Nombre de la persona (opcional)", placeholder="Ejemplo: Francisco")
-    st.caption("El nombre solo se utiliza para identificar el informe descargable.")
+    name = st.text_input(
+        "Nombre de la persona (opcional)",
+        placeholder="Ejemplo: Francisco",
+    )
 
-    tabs = st.tabs(["🌬️ Vata", "🔥 Pitta", "🌿 Kapha"])
-    selected_scores = {dosha: [] for dosha in QUESTIONNAIRES}
+    st.caption(
+        "El nombre solo se utiliza para identificar el informe descargable."
+    )
 
-    for tab, (dosha, questions) in zip(tabs, QUESTIONNAIRES.items()):
+    st.info(
+        "📌 ORDEN PARA COMPLETAR LA EVALUACIÓN: "
+        "responde primero las 20 preguntas de 🌬️ Vata. "
+        "Luego pulsa la pestaña 🔥 Pitta y, cuando termines, "
+        "pulsa 🌿 Kapha. Después de completar las tres secciones, "
+        "presiona Calcular mis porcentajes."
+    )
+
+    tabs = st.tabs(
+        [
+            "🌬️ Vata",
+            "🔥 Pitta",
+            "🌿 Kapha",
+        ]
+    )
+
+    selected_scores = {
+        dosha: []
+        for dosha in QUESTIONNAIRES
+    }
+
+    for tab, (dosha, questions) in zip(
+        tabs,
+        QUESTIONNAIRES.items(),
+    ):
         with tab:
             st.subheader(f"Sección {dosha}")
-            st.markdown(
-                """
-                <div class="scale">
-                <b>Escala gradual:</b> la intensidad aumenta de 1 a 6.<br>
-                1 = no se aplica en absoluto &nbsp;·&nbsp; 2 = casi no se aplica<br>
-                3 = a veces, en menor grado &nbsp;·&nbsp; 4 = a veces, en mayor grado<br>
-                5 = generalmente &nbsp;·&nbsp; 6 = casi siempre
-                </div>
-                """,
-                unsafe_allow_html=True,
+
+            st.info(
+                "🔢 CÓMO PUNTUAR: los números representan grados "
+                "y la intensidad aumenta de 1 a 6.\n\n"
+                "1 = no se aplica en absoluto\n\n"
+                "2 = casi no se aplica\n\n"
+                "3 = se aplica a veces, en menor grado\n\n"
+                "4 = se aplica a veces, en mayor grado\n\n"
+                "5 = se aplica generalmente\n\n"
+                "6 = se aplica casi siempre"
             )
 
-            for index, question in enumerate(questions, start=1):
+            for index, question in enumerate(
+                questions,
+                start=1,
+            ):
                 st.markdown(
-                    f'<div class="question-number">{index}. {question}</div>',
+                    (
+                        f'<div class="question-number">'
+                        f"{index}. {question}"
+                        f"</div>"
+                    ),
                     unsafe_allow_html=True,
                 )
+
                 choice = st.selectbox(
                     "Puntuación",
-                    options=["Selecciona una puntuación"] + list(SCORE_OPTIONS),
+                    options=[
+                        "Selecciona una puntuación"
+                    ]
+                    + list(SCORE_OPTIONS),
                     key=f"{dosha.lower()}_{index}",
                     label_visibility="collapsed",
                 )
-                selected_scores[dosha].append(SCORE_OPTIONS.get(choice))
+
+                selected_scores[dosha].append(
+                    SCORE_OPTIONS.get(choice)
+                )
 
     submitted = st.form_submit_button(
-        "Calcular mis porcentajes", type="primary", use_container_width=True
+        "Calcular mis porcentajes",
+        type="primary",
+        use_container_width=True,
     )
+
 
 if submitted:
     missing_by_dosha = {
-        dosha: sum(score is None for score in scores)
+        dosha: sum(
+            score is None
+            for score in scores
+        )
         for dosha, scores in selected_scores.items()
     }
-    total_missing = sum(missing_by_dosha.values())
+
+    total_missing = sum(
+        missing_by_dosha.values()
+    )
 
     if total_missing:
         details = ", ".join(
-            f"{dosha}: {amount}" for dosha, amount in missing_by_dosha.items() if amount
+            f"{dosha}: {amount}"
+            for dosha, amount in missing_by_dosha.items()
+            if amount
         )
+
         st.error(
-            f"Faltan {total_missing} afirmación(es) por responder ({details}). "
-            "Revisa las tres pestañas."
+            f"Faltan {total_missing} afirmaciones por responder "
+            f"({details}). Revisa las tres pestañas."
         )
+
     else:
         section_scores = {
-            dosha: sum(scores) for dosha, scores in selected_scores.items()
+            dosha: sum(scores)
+            for dosha, scores in selected_scores.items()
         }
-        grand_total, percentages, ranked, profile, explanation = calculate_result(
-            section_scores
-        )
+
+        (
+            grand_total,
+            percentages,
+            ranked,
+            profile,
+            explanation,
+        ) = calculate_result(section_scores)
+
         st.session_state.result = {
             "name": name,
             "section_scores": section_scores,
@@ -356,30 +530,52 @@ if submitted:
             "explanation": explanation,
         }
 
+
 if st.session_state.result:
     result = st.session_state.result
+
     st.divider()
     st.header("Resultado de la evaluación")
-    st.success(f"Perfil: **{result['profile']}**. {result['explanation']}")
+
+    st.success(
+        f"Perfil: **{result['profile']}**. "
+        f"{result['explanation']}"
+    )
 
     for dosha in result["ranked"]:
         info = DOSHA_INFO[dosha]
         score = result["section_scores"][dosha]
         percentage = result["percentages"][dosha]
+
         st.markdown(
             f"""
-            <div class="result-card" style="--accent:{info['color']}">
-                <h3>{info['emoji']} {dosha}: {percentage:.1f}%</h3>
-                <p><b>{score} puntos de 120.</b> Elementos: {info['elements']}.</p>
-                <p>Se relaciona con {info['summary']}.</p>
+            <div
+                class="result-card"
+                style="--accent:{info['color']}"
+            >
+                <h3>
+                    {info['emoji']} {dosha}:
+                    {percentage:.1f}%
+                </h3>
+
+                <p>
+                    <b>{score} puntos de 120.</b>
+                    Elementos: {info['elements']}.
+                </p>
+
+                <p>
+                    Se relaciona con {info['summary']}.
+                </p>
             </div>
             """,
             unsafe_allow_html=True,
         )
+
         st.progress(percentage / 100)
 
     st.caption(
-        f"Suma de los tres resultados: {result['grand_total']} puntos. "
+        f"Suma de los tres resultados: "
+        f"{result['grand_total']} puntos. "
         "Los porcentajes comparativos suman aproximadamente 100%."
     )
 
@@ -391,6 +587,7 @@ if st.session_state.result:
         result["profile"],
         result["explanation"],
     )
+
     st.download_button(
         "Descargar resultado en TXT",
         data=report.encode("utf-8"),
@@ -399,15 +596,21 @@ if st.session_state.result:
         use_container_width=True,
     )
 
-    if st.button("Realizar una nueva evaluación", use_container_width=True):
+    if st.button(
+        "Realizar una nueva evaluación",
+        use_container_width=True,
+    ):
         st.session_state.clear()
         st.rerun()
 
+
 st.divider()
+
 with st.expander("Información importante"):
     st.write(
-        "La puntuación de cada dosha puede variar entre 20 y 120. El porcentaje se "
-        "calcula dividiendo el total de cada dosha entre la suma de Vata, Pitta y "
-        "Kapha. Esta herramienta tiene fines educativos y no constituye diagnóstico "
-        "médico ni recomendación de tratamiento."
+        "La puntuación de cada dosha puede variar entre 20 y 120. "
+        "El porcentaje se calcula dividiendo el total de cada dosha "
+        "entre la suma de Vata, Pitta y Kapha. Esta herramienta tiene "
+        "fines educativos y no constituye diagnóstico médico ni "
+        "recomendación de tratamiento."
     )
